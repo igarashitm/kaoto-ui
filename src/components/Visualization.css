@@ -38,6 +38,13 @@
     top: 38%;
 }
 
+.stepNode__Branch__Collapse__Expand {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+
+}
+
 .stepNode__Delete {
     position: absolute;
     left: 0;

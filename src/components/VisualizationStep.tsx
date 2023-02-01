@@ -18,10 +18,11 @@ import {
 } from '@kaoto/store';
 import { IStepProps, IVizStepNodeData } from '@kaoto/types';
 import { findPath, getDeepValue, setDeepValue } from '@kaoto/utils';
-import { AlertVariant, Popover } from '@patternfly/react-core';
-import { CubesIcon, PlusIcon, MinusIcon } from '@patternfly/react-icons';
+import {AlertVariant, Popover} from '@patternfly/react-core';
+import {CubesIcon, PlusIcon, MinusIcon, CompressIcon, ExpandIcon} from '@patternfly/react-icons';
 import { useAlert } from '@rhoas/app-services-ui-shared';
 import { Handle, NodeProps, Position } from 'reactflow';
+import {useEffect, useState} from "react";
 
 const currentDSL = useSettingsStore.getState().settings.dsl.name;
 const appendStep = useIntegrationJsonStore.getState().appendStep;
@@ -35,6 +36,8 @@ const VisualizationStep = ({ data }: NodeProps<IVizStepNodeData>) => {
   const layout = useVisualizationStore((state) => state.layout);
   const steps = useIntegrationJsonStore((state) => state.integrationJson.steps);
   const currentStepNested = nestedSteps.find((ns) => ns.stepUuid === data.step.UUID);
+  const { nodes, edges, setNodes, setEdges } = useVisualizationStore();
+  const [isExpanded, setIsExpanded] = useState<boolean>(true);
 
   const { addAlert } = useAlert() || {};
 
@@ -145,6 +148,23 @@ const VisualizationStep = ({ data }: NodeProps<IVizStepNodeData>) => {
     });
   };
 
+  useEffect(() => {
+    const children = getCurrentStepChildren();
+    nodes.filter((node) =>
+      children.find((c) => c.stepUuid === node.data.step.UUID))
+      .forEach((child) => {
+        child.hidden = !isExpanded
+        edges.filter((edge) => edge.source === child.id || edge.target === child.id)
+          .forEach((edge) => edge.hidden = !isExpanded);
+      });
+    setNodes(nodes);
+    setEdges(edges);
+  }, [isExpanded]);
+
+  function getCurrentStepChildren() {
+    return nestedSteps.filter((ns) => ns.originStepUuid == data.step.UUID);
+  }
+
   return (
     <>
       {data.step?.UUID ? (
@@ -201,6 +221,16 @@ const VisualizationStep = ({ data }: NodeProps<IVizStepNodeData>) => {
           >
             <MinusIcon />
           </button>
+
+          {getCurrentStepChildren().length > 0 && (
+            <button
+              className={'stepNode__Branch__Collapse__Expand trashButton nodrag'}
+              data-testid={'stepNode__Collapse__Expand__Branch-btn'}
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
+              {isExpanded ? <CompressIcon /> : <ExpandIcon />}
+            </button>
+          )}
 
           {/* VISUAL REPRESENTATION OF STEP WITH ICON */}
           <div className={'stepNode__Icon stepNode__clickable'}>
