@@ -432,18 +432,36 @@ export class VisualizationService {
 
         // ensures correct order of nodes (particularly important for branches)
         'elk.layered.crossingMinimization.forceNodeModelOrder': 'true',
+        'elk.considerModelOrder.strategy': 'NODES_AND_EDGES',
+        'elk.crossingMinimization.forceNodeModelOrder': 'true',
+        'elk.partitioning.activate': 'true',
       },
     });
 
     const elkNodes: ElkNode[] = [];
     const elkEdges: ElkExtendedEdge[] = [];
+    const parents: string[] = [];
 
     nodes.forEach((flowNode) => {
-      elkNodes.push({
+      let partition = -1;
+      if (flowNode.data.branchInfo?.parentStepUuid && !flowNode.data.previousStepUuid) {
+        if (parents.indexOf(flowNode.data.branchInfo.parentStepUuid) === -1) {
+          parents.push(flowNode.data.branchInfo.parentStepUuid);
+        }
+        partition = parents.indexOf(flowNode.data.branchInfo.parentStepUuid);
+      }
+
+      const elkNode: ElkNode = {
         id: flowNode.id,
         width: flowNode.width ?? DEFAULT_WIDTH_HEIGHT,
         height: flowNode.height ?? DEFAULT_WIDTH_HEIGHT,
-      });
+      };
+      if (partition !== -1) {
+        elkNode.layoutOptions = {
+          'elk.partitioning.partition': partition.toString(),
+        };
+      }
+      elkNodes.push(elkNode);
     });
 
     edges.forEach((flowEdge) => {
