@@ -434,7 +434,9 @@ export class VisualizationService {
         'elk.layered.crossingMinimization.forceNodeModelOrder': 'true',
         'elk.considerModelOrder.strategy': 'NODES_AND_EDGES',
         'elk.crossingMinimization.forceNodeModelOrder': 'true',
+        'elk.crossingMinimization.forceNodeModelOrder.components': 'FORCE_MODEL_ORDER',
         'elk.partitioning.activate': 'true',
+        'elk.layered.layering.strategy': 'COFFMAN_GRAHAM',
       },
     });
 
